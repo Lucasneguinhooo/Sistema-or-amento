@@ -2,7 +2,6 @@
  * Sistema de Orçamento Profissional - The Office
  * Versão com Catálogo de Produtos
  */
-
 // ===== ESTADO GLOBAL =====
 let products = [];
 let catalogProducts = [
@@ -51,50 +50,41 @@ let budgetInfo = {
     discount: 0,
     tax: 0
 };
-
 function getValidUntilDate() {
     const date = new Date();
     date.setDate(date.getDate() + 30);
     return date.toISOString().split('T')[0];
 }
-
 function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     }).format(value || 0);
 }
-
 function formatDate(dateString) {
     if (!dateString) return '';
     return new Date(dateString + 'T00:00:00').toLocaleDateString('pt-BR');
 }
-
 function openCatalog() {
     document.getElementById('catalogModal').classList.add('active');
 }
-
 function closeCatalog() {
     document.getElementById('catalogModal').classList.remove('active');
 }
-
 function addCatalogProduct() {
     const name = document.getElementById('newProductName').value.trim();
     const price = parseFloat(document.getElementById('newProductPrice').value) || 0;
     const image = document.getElementById('newProductImage').value.trim();
-
     if (!name || price <= 0) {
         alert('Preencha nome e preço válidos!');
         return;
     }
-
     const newProduct = {
         id: Date.now(),
         name,
         price,
         image: image || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"%3E%3Cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/%3E%3C/svg%3E'
     };
-
     catalogProducts.push(newProduct);
     saveCatalogToStorage();
     renderCatalog();
@@ -110,7 +100,6 @@ function addCatalogProduct() {
     
     alert('Produto adicionado ao catálogo com sucesso!');
 }
-
 function deleteCatalogProduct(id) {
     if (confirm('Deseja remover este produto do catálogo?')) {
         catalogProducts = catalogProducts.filter(p => p.id !== id);
@@ -122,11 +111,9 @@ function deleteCatalogProduct(id) {
         console.log('catalogProducts = ' + JSON.stringify(catalogProducts, null, 2) + ';');
     }
 }
-
 function addFromCatalog(id) {
     const catalogProduct = catalogProducts.find(p => p.id === id);
     if (!catalogProduct) return;
-
     const newProduct = {
         id: Date.now(),
         description: catalogProduct.name,
@@ -135,14 +122,12 @@ function addFromCatalog(id) {
         total: catalogProduct.price,
         image: catalogProduct.image
     };
-
     products.push(newProduct);
     saveProductsToStorage();
     renderProducts();
     calculateTotals();
     closeCatalog();
 }
-
 function renderCatalog() {
     const grid = document.getElementById('catalogGrid');
     
@@ -158,7 +143,6 @@ function renderCatalog() {
         `;
         return;
     }
-
     grid.innerHTML = catalogProducts.map(product => `
         <div class="catalog-item">
             <img src="${product.image}" alt="${product.name}" class="catalog-item-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; fill=&quot;none&quot; viewBox=&quot;0 0 24 24&quot; stroke=&quot;currentColor&quot;%3E%3Cpath stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4&quot;/%3E%3C/svg%3E'">
@@ -182,7 +166,6 @@ function renderCatalog() {
         </div>
     `).join('');
 }
-
 // ===== GERENCIAMENTO DE PRODUTOS DO ORÇAMENTO =====
 function addCustomProduct() {
     const newProduct = {
@@ -199,7 +182,6 @@ function addCustomProduct() {
     renderProducts();
     calculateTotals();
 }
-
 function updateProduct(id, field, value) {
     const product = products.find(p => p.id === id);
     if (!product) return;
@@ -220,7 +202,6 @@ function updateProduct(id, field, value) {
     renderProducts();
     calculateTotals();
 }
-
 function removeProduct(id) {
     if (confirm('Deseja remover este item do orçamento?')) {
         products = products.filter(p => p.id !== id);
@@ -229,7 +210,6 @@ function removeProduct(id) {
         calculateTotals();
     }
 }
-
 function renderProducts() {
     const grid = document.getElementById('productsGrid');
     
@@ -245,7 +225,6 @@ function renderProducts() {
         `;
         return;
     }
-
     grid.innerHTML = products.map(product => `
         <div class="product-item fade-in">
             <img src="${product.image}" alt="Produto" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; fill=&quot;none&quot; viewBox=&quot;0 0 24 24&quot; stroke=&quot;currentColor&quot;%3E%3Cpath stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; stroke-width=&quot;2&quot; d=&quot;M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4&quot;/%3E%3C/svg%3E'">
@@ -297,7 +276,6 @@ function renderProducts() {
         </div>
     `).join('');
 }
-
 // ===== CÁLCULOS =====
 function calculateTotals() {
     const subtotal = products.reduce((sum, product) => sum + product.total, 0);
@@ -305,11 +283,9 @@ function calculateTotals() {
     const subtotalAfterDiscount = subtotal - discountAmount;
     const taxAmount = (subtotalAfterDiscount * budgetInfo.tax) / 100;
     const total = subtotalAfterDiscount + taxAmount;
-
     updateTotalsDisplay({ subtotal, discountAmount, subtotalAfterDiscount, taxAmount, total });
     return { subtotal, discountAmount, subtotalAfterDiscount, taxAmount, total };
 }
-
 function updateTotalsDisplay(totals) {
     const subtotalEl = document.getElementById('subtotal');
     const discountRow = document.getElementById('discountRow');
@@ -319,7 +295,6 @@ function updateTotalsDisplay(totals) {
     const taxLabel = document.getElementById('taxLabel');
     const taxAmount = document.getElementById('taxAmount');
     const totalAmount = document.getElementById('totalAmount');
-
     if (subtotalEl) subtotalEl.textContent = formatCurrency(totals.subtotal);
     
     if (budgetInfo.discount > 0) {
@@ -329,7 +304,6 @@ function updateTotalsDisplay(totals) {
     } else {
         if (discountRow) discountRow.style.display = 'none';
     }
-
     if (budgetInfo.tax > 0) {
         if (taxRow) taxRow.style.display = 'flex';
         if (taxLabel) taxLabel.textContent = `Impostos (${budgetInfo.tax}%):`;
@@ -337,10 +311,8 @@ function updateTotalsDisplay(totals) {
     } else {
         if (taxRow) taxRow.style.display = 'none';
     }
-
     if (totalAmount) totalAmount.textContent = formatCurrency(totals.total);
 }
-
 // ===== ARMAZENAMENTO LOCAL =====
 function saveCatalogToStorage() {
     try {
@@ -350,7 +322,6 @@ function saveCatalogToStorage() {
         console.error('Erro ao salvar catálogo:', e);
     }
 }
-
 function loadCatalogFromStorage() {
     try {
         const saved = localStorage.getItem('theOfficeCatalog');
@@ -369,198 +340,250 @@ function loadCatalogFromStorage() {
         console.error('Erro ao carregar catálogo:', e);
     }
 }
-
 // ===== GERAÇÃO DE PDF =====
-function generatePDF() {
-    exportarParaExcel(); // <-- Gera o Excel automaticamente ao clicar no PDF
-
-    const totals = calculateTotals();
-    const html = `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-            <meta charset="UTF-8">
-            <title>Orçamento ${budgetInfo.number}</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: Arial, sans-serif; color: #333; line-height: 1.4; }
-                
-                .header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 25px; }
-                .header-content { display: flex; justify-content: space-between; align-items: center; }
-                
-                .logo-container { display: flex; align-items: center; gap: 15px; }
-                .logo { position: relative; width: 80px; height: 50px; background: #000; border-radius: 8px; padding: 8px; }
-                .logo-circle { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: #c2754f; border-radius: 50%; }
-                .logo-text { color: white; line-height: 1.1; }
-                .logo-text .the { font-size: 12px; }
-                .logo-text .office { font-size: 14px; font-weight: bold; }
-                .logo-text .subtitle { font-size: 8px; opacity: 0.9; }
-                
-                .company-info { flex: 1; margin-left: 20px; }
-                .company-info h1 { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
-                .company-info .subtitle { font-size: 14px; opacity: 0.9; }
-                
-                .quote-info { text-align: right; }
-                .quote-number { font-size: 24px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; }
-                
-                .client-section { background: #f8fafc; padding: 25px; }
-                .client-header { background: #374151; color: white; padding: 12px 20px; margin: 0 -25px 20px -25px; font-weight: 600; }
-                .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-                .client-info, .budget-info { background: white; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; }
-                .client-info h3, .budget-info h3 { color: #1e293b; font-size: 14px; margin-bottom: 15px; }
-                .client-info p, .budget-info p { margin: 8px 0; font-size: 13px; }
-                
-                .products-section { padding: 25px; }
-                .section-title { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 15px 25px; margin: 0 -25px 25px -25px; font-weight: 700; }
-                .products-table { width: 100%; border-collapse: collapse; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-                .products-table thead th { background: #374151; color: white; padding: 15px 12px; font-weight: 700; text-align: left; }
-                .products-table tbody td { padding: 15px 12px; border-bottom: 1px solid #e5e7eb; }
-                .products-table tbody tr:nth-child(even) { background: #f9fafb; }
-                .product-row { display: flex; align-items: center; gap: 15px; }
-                .product-image { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; background: #f3f4f6; }
-                .product-desc { font-weight: 600; color: #1e293b; white-space: pre-wrap; }
-                .text-center { text-align: center; }
-                
-                .totals-section { background: #f8fafc; padding: 25px; }
-                .totals-container { max-width: 450px; margin-left: auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-                .totals-header { background: #374151; color: white; padding: 12px 20px; font-weight: 700; }
-                .totals-body { padding: 20px; }
-                .total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-                .total-row.discount { color: #dc2626; font-weight: 600; }
-                .total-row.tax { color: #ea580c; font-weight: 600; }
-                .total-row.final { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; margin: 15px -20px -20px -20px; padding: 20px; font-size: 18px; font-weight: 800; }
-                
-                .footer { background: #374151; color: white; padding: 20px; text-align: center; font-size: 11px; }
-            </style>
-        </head>
-        <body>
+const pdfStyles = `
+    /* Resets e Configurações Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4; margin: 15mm 20mm; }
+    body { 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+        color: #2b2b2b; 
+        line-height: 1.5; 
+        background-color: #ffffff;
+    }
+    
+    /* Layout Principal */
+    .document-container { max-width: 100%; margin: 0 auto; }
+    
+    /* Cabeçalho */
+    .header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        border-bottom: 2px solid #1a365d; 
+        padding-bottom: 25px; 
+        margin-bottom: 35px; 
+    }
+    
+    /* Logotipo Moderno */
+    .logo-container { display: flex; align-items: center; gap: 15px; }
+    .logo-box {
+        background-color: #1a365d;
+        color: #ffffff;
+        padding: 12px 18px;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .logo-box .the { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.9; }
+    .logo-box .office { font-size: 20px; font-weight: 800; }
+    .company-details { font-size: 12px; color: #4a5568; line-height: 1.6; }
+    
+    /* Informação do Documento (Direita) */
+    .doc-info { text-align: right; }
+    .doc-info h1 { font-size: 32px; color: #1a365d; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+    .doc-info .ref { font-size: 15px; font-weight: bold; color: #4a5568; }
+    .doc-info .date { font-size: 12px; margin-top: 6px; color: #718096; }
+    
+    /* Secção de Dados (Cliente e Orçamento) */
+    .info-section { display: flex; gap: 30px; margin-bottom: 40px; }
+    .info-box { flex: 1; }
+    .info-box.highlight { background-color: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #edf2f7; }
+    
+    .info-box h2 { 
+        font-size: 12px; 
+        text-transform: uppercase; 
+        color: #a0aec0; 
+        letter-spacing: 1px; 
+        margin-bottom: 12px; 
+        border-bottom: 1px solid #edf2f7; 
+        padding-bottom: 6px; 
+    }
+    .info-box p { font-size: 13px; margin-bottom: 6px; }
+    .info-box strong { font-weight: 600; color: #2d3748; display: inline-block; width: 95px; }
+    
+    /* Tabela de Produtos */
+    .table-container { margin-bottom: 35px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { 
+        background-color: #f8fafc; 
+        color: #4a5568; 
+        font-size: 11px; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        padding: 14px 12px; 
+        text-align: left; 
+        border-bottom: 2px solid #cbd5e0;
+    }
+    tbody td { 
+        padding: 14px 12px; 
+        font-size: 13px; 
+        border-bottom: 1px solid #edf2f7; 
+        vertical-align: middle;
+    }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+    
+    /* Produto Individual */
+    .product-cell { display: flex; align-items: center; gap: 15px; }
+    .prod-img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0; background: #fff; }
+    .prod-name { font-weight: 600; color: #2d3748; }
+    
+    /* Resumo Financeiro */
+    .totals-section { display: flex; justify-content: flex-end; margin-bottom: 50px; }
+    .totals-box { width: 360px; background-color: #f8fafc; border-radius: 8px; padding: 25px; border: 1px solid #edf2f7; }
+    .total-line { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: #4a5568; }
+    .total-line.discount { color: #e53e3e; }
+    .total-line.tax { color: #dd6b20; }
+    .total-line.final { 
+        margin-top: 18px; 
+        padding-top: 18px; 
+        border-top: 2px solid #cbd5e0; 
+        font-size: 20px; 
+        font-weight: 800; 
+        color: #1a365d; 
+    }
+    
+    /* Rodapé / Termos */
+    .footer { 
+        padding-top: 25px; 
+        border-top: 1px solid #edf2f7; 
+        font-size: 11px; 
+        color: #718096; 
+        text-align: center; 
+        line-height: 1.6;
+    }
+    .footer-highlight { font-weight: bold; color: #4a5568; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+`;
+function getPdfHtmlTemplate(budgetInfo, clientInfo, products, totals) {
+    return `
+    <!DOCTYPE html>
+    <html lang="pt-PT">
+    <head>
+        <meta charset="UTF-8">
+        <title>Orçamento #${budgetInfo.number}</title>
+        <style>${pdfStyles}</style>
+    </head>
+    <body>
+        <div class="document-container">
             <div class="header">
-                <div class="header-content">
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div class="logo">
-                            <div class="logo-circle"></div>
-                            <div class="logo-text">
-                                <div class="the">the</div>
-                                <div class="office">office</div>
-                                <div class="subtitle">móveis para escritório</div>
-                            </div>
-                        </div>
-                        <div class="company-info">
-                            <h1>SISTEMA DE ORÇAMENTO</h1>
-                            <div class="subtitle">Proposta Comercial Profissional</div>
-                        </div>
+                <div class="logo-container">
+                    <div class="logo-box">
+                        <div class="the">The</div>
+                        <div class="office">Office</div>
                     </div>
-                    <div class="quote-info">
-                        <div>ORÇAMENTO</div>
-                        <div class="quote-number">#${budgetInfo.number}</div>
+                    <div class="company-details">
+                        <strong>The Office - Soluções em Mobiliário</strong><br>
+                        Rua do Comércio, 123<br>
+                        contacto@theoffice.pt | +351 900 000 000
                     </div>
                 </div>
-            </div>
-            
-            <div class="client-section">
-                <div class="client-header">PROPOSTA COMERCIAL - ${clientInfo.name.toUpperCase() || 'CLIENTE'}</div>
-                <div class="client-grid">
-                    <div class="client-info">
-                        <h3>Dados do Cliente</h3>
-                        <p><strong>Nome:</strong> ${clientInfo.name || 'Não informado'}</p>
-                        <p><strong>Email:</strong> ${clientInfo.email || 'Não informado'}</p>
-                        <p><strong>Telefone:</strong> ${clientInfo.phone || 'Não informado'}</p>
-                        <p><strong>Endereço:</strong> ${clientInfo.address || 'Não informado'}</p>
-                    </div>
-                    <div class="budget-info">
-                        <h3>Detalhes do Orçamento</h3>
-                        <p><strong>Número:</strong> ${budgetInfo.number}</p>
-                        <p><strong>Data:</strong> ${formatDate(budgetInfo.date)}</p>
-                        <p><strong>Válido até:</strong> ${formatDate(budgetInfo.validUntil)}</p>
-                    </div>
+                <div class="doc-info">
+                    <h1>Orçamento</h1>
+                    <div class="ref">Referência #${budgetInfo.number}</div>
+                    <div class="date">Emitido a: ${formatDate(budgetInfo.date)}</div>
                 </div>
             </div>
-
-            <div class="products-section">
-                <div class="section-title">ITENS DO ORÇAMENTO</div>
-                <table class="products-table">
+            <div class="info-section">
+                <div class="info-box">
+                    <h2>Preparado Para</h2>
+                    <p><strong>Cliente:</strong> ${clientInfo.name || 'Não informado'}</p>
+                    <p><strong>E-mail:</strong> ${clientInfo.email || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> ${clientInfo.phone || 'Não informado'}</p>
+                    <p><strong>Endereço:</strong> ${clientInfo.address || 'Não informado'}</p>
+                </div>
+                <div class="info-box highlight">
+                    <h2>Detalhes da Proposta</h2>
+                    <p><strong>Nº Orçamento:</strong> ${budgetInfo.number}</p>
+                    <p><strong>Data de Emissão:</strong> ${formatDate(budgetInfo.date)}</p>
+                    <p><strong>Válido Até:</strong> ${formatDate(budgetInfo.validUntil)}</p>
+                    <p><strong>Moeda:</strong> EUR (€)</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
-                            <th>DESCRIÇÃO</th>
-                            <th class="text-center">QUANT</th>
-                            <th class="text-center">VALOR UNIT.</th>
-                            <th class="text-center">VALOR TOTAL</th>
+                            <th style="width: 50%;">Descrição do Artigo</th>
+                            <th class="text-center">Quantidade</th>
+                            <th class="text-right">Preço Unitário</th>
+                            <th class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${products.map(product => `
                             <tr>
                                 <td>
-                                    <div class="product-row">
-                                        <img src="${product.image}" alt="Produto" class="product-image" onerror="this.style.display='none'">
-                                        <div class="product-desc">${product.description || 'Produto sem descrição'}</div>
+                                    <div class="product-cell">
+                                        <img src="${product.image}" class="prod-img" onerror="this.style.display='none'">
+                                        <span class="prod-name">${product.description || 'Artigo sem descrição'}</span>
                                     </div>
                                 </td>
                                 <td class="text-center">${product.quantity}</td>
-                                <td class="text-center">${formatCurrency(product.unitPrice)}</td>
-                                <td class="text-center"><strong>${formatCurrency(product.total)}</strong></td>
+                                <td class="text-right">${formatCurrency(product.unitPrice)}</td>
+                                <td class="text-right" style="font-weight: 600; color: #2d3748;">${formatCurrency(product.total)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             </div>
-
             <div class="totals-section">
-                <div class="totals-container">
-                    <div class="totals-header">RESUMO FINANCEIRO</div>
-                    <div class="totals-body">
-                        <div class="total-row">
-                            <span>SUBTOTAL:</span>
-                            <span>${formatCurrency(totals.subtotal)}</span>
+                <div class="totals-box">
+                    <div class="total-line">
+                        <span>Subtotal:</span>
+                        <span>${formatCurrency(totals.subtotal)}</span>
+                    </div>
+                    ${budgetInfo.discount > 0 ? `
+                        <div class="total-line discount">
+                            <span>Desconto (${budgetInfo.discount}%):</span>
+                            <span>- ${formatCurrency(totals.discountAmount)}</span>
                         </div>
-                        ${budgetInfo.discount > 0 ? `
-                            <div class="total-row discount">
-                                <span>DESCONTO (${budgetInfo.discount}%):</span>
-                                <span>- ${formatCurrency(totals.discountAmount)}</span>
-                            </div>
-                        ` : ''}
-                        ${budgetInfo.tax > 0 ? `
-                            <div class="total-row tax">
-                                <span>IMPOSTOS (${budgetInfo.tax}%):</span>
-                                <span>${formatCurrency(totals.taxAmount)}</span>
-                            </div>
-                        ` : ''}
-                        <div class="total-row final">
-                            <span>TOTAL</span>
-                            <span>${formatCurrency(totals.total)}</span>
+                    ` : ''}
+                    ${budgetInfo.tax > 0 ? `
+                        <div class="total-line tax">
+                            <span>Impostos (${budgetInfo.tax}%):</span>
+                            <span>+ ${formatCurrency(totals.taxAmount)}</span>
                         </div>
+                    ` : ''}
+                    <div class="total-line final">
+                        <span>TOTAL A PAGAR:</span>
+                        <span>${formatCurrency(totals.total)}</span>
                     </div>
                 </div>
             </div>
-
             <div class="footer">
-                <p>CONDIÇÕES COMERCIAIS E VALORES PARA FECHAMENTO DESTE ORÇAMENTO COMPLETO</p>
-                <p>• PAGAMENTO: À VISTA OU PARCELADO CONFORME NEGOCIAÇÃO</p>
-                <p>• PRAZO DE ENTREGA: CONFORME DISPONIBILIDADE</p>
-                <p>• GARANTIA: CONSULTAR TERMO DO FABRICANTE</p>
-                <p>• VALIDADE DESTA PROPOSTA: ${formatDate(budgetInfo.validUntil)}</p>
+                <p class="footer-highlight">Termos & Condições de Fornecimento</p>
+                <p>Este orçamento é válido até <strong>${formatDate(budgetInfo.validUntil)}</strong>. Os valores apresentados já contêm todas as taxas devidas.</p>
+                <p>A adjudicação da proposta requer um sinal acordado entre as partes, com o remanescente a ser liquidado contra a entrega.</p>
+                <p>O prazo de entrega será estabelecido após a aprovação da proposta. Todos os artigos estão cobertos pela garantia do fabricante.</p>
+                <p style="margin-top: 15px;">Obrigado por preferir a <strong>The Office</strong>!</p>
             </div>
-        </body>
-        </html>
+        </div>
+    </body>
+    </html>
     `;
-
+}
+// ===== GERAÇÃO DE PDF =====
+function generatePDF() {
+    exportarParaExcel(); 
+    const totals = calculateTotals();
+    const html = getPdfHtmlTemplate(budgetInfo, clientInfo, products, totals);
     const printWindow = window.open('', '_blank');
     if (printWindow) {
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.focus();
         setTimeout(() => printWindow.print(), 500);
+    } else {
+        alert("Por favor, permita pop-ups para gerar o PDF.");
     }
 }
-
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
     // Campos do cliente
     document.getElementById('clientName').oninput = (e) => clientInfo.name = e.target.value;
-    document.getElementById('clientEmail').oninput = (e) => clientInfo.email = e.target.value;
+    document.getElementById('clientEmail').oninput = (e) => clientInfo.email = e.target.value.trim();
     document.getElementById('clientPhone').oninput = (e) => clientInfo.phone = e.target.value;
     document.getElementById('clientAddress').oninput = (e) => clientInfo.address = e.target.value;
-
     // Campos do orçamento
     document.getElementById('budgetNumber').value = budgetInfo.number;
     document.getElementById('budgetNumber').oninput = (e) => budgetInfo.number = e.target.value;
@@ -580,7 +603,6 @@ function setupEventListeners() {
         budgetInfo.tax = Math.max(0, Math.min(100, parseFloat(e.target.value) || 0));
         calculateTotals();
     };
-
     // Máscara de data automática para Data
     const budgetDateInput = document.getElementById('budgetDate');
     budgetDateInput.type = 'text';
@@ -592,7 +614,6 @@ function setupEventListeners() {
         e.target.value = maskDate(e.target.value);
         budgetInfo.date = convertToISODate(e.target.value);
     };
-
     // Máscara de data automática para Válido até
     const budgetValidUntilInput = document.getElementById('budgetValidUntil');
     budgetValidUntilInput.type = 'text';
@@ -605,7 +626,6 @@ function setupEventListeners() {
         budgetInfo.validUntil = convertToISODate(e.target.value);
     };
 }
-
 // ===== FUNÇÕES DE MÁSCARA DE DATA =====
 function maskDate(value) {
     // Remove tudo que não é número
@@ -621,20 +641,17 @@ function maskDate(value) {
     
     return value;
 }
-
 function formatDateInput(isoDate) {
     if (!isoDate) return '';
     const [year, month, day] = isoDate.split('-');
     return `${day}/${month}/${year}`;
 }
-
 function convertToISODate(maskedDate) {
     if (!maskedDate || maskedDate.length < 10) return '';
     const [day, month, year] = maskedDate.split('/');
     if (!day || !month || !year || year.length < 4) return '';
     return `${year}-${month}-${day}`;
 }
-
 // ===== INICIALIZAÇÃO =====
 function init() {
     loadCatalogFromStorage();
@@ -645,14 +662,12 @@ function init() {
     calculateTotals();
     console.log('✅ Sistema de Orçamento carregado com sucesso!');
 }
-
 // Inicializar quando o DOM estiver pronto
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
 }
-
 // Salva os itens do orçamento no localStorage 
 function saveProductsToStorage() {
     try {
@@ -661,7 +676,6 @@ function saveProductsToStorage() {
         console.error('Erro ao salvar produtos:', e);
     }
 }
-
 // Carrega os itens do orçamento do localStorage
 function loadProductsFromStorage() {
     try {
@@ -673,20 +687,17 @@ function loadProductsFromStorage() {
         console.error('Erro ao carregar produtos:', e);
     }
 }
-
 // ===== EXPORTAR PARA EXCEL (CSV) =====
 function exportarParaExcel() {
     if (products.length === 0) {
         alert("O orçamento está vazio. Adicione produtos antes de exportar.");
         return;
     }
-
     // O BOM (\uFEFF) é obrigatório para o Excel ler acentos em UTF-8 corretamente
     let csv = "\uFEFF"; 
     
     // Título
     csv += "ORÇAMENTO - THE OFFICE\n\n";
-
     // Dados do Cliente
     if (clientInfo) {
         csv += "DADOS DO CLIENTE\n";
@@ -695,10 +706,8 @@ function exportarParaExcel() {
         csv += `Telefone:;${clientInfo.phone || 'Não informado'}\n`;
         csv += `Morada:;${clientInfo.address || 'Não informada'}\n\n`;
     }
-
     // Cabeçalho da Tabela de Produtos
     csv += "Item;Descrição;Quantidade;Preço Unitário;Total\n";
-
     // Preencher Produtos
     products.forEach((p, index) => {
         // Limpar possíveis ponto e vírgulas da descrição para não quebrar o Excel
@@ -709,9 +718,7 @@ function exportarParaExcel() {
         
         csv += `${index + 1};${desc};${p.quantity};${precoFormatado};${totalFormatado}\n`;
     });
-
     csv += "\n";
-
     // Calcular Totais
     const totais = calculateTotals();
     
@@ -724,12 +731,9 @@ function exportarParaExcel() {
     if (budgetInfo && budgetInfo.tax > 0) {
         csv += `;;;IMPOSTO (${budgetInfo.tax}%):;${totais.taxAmount.toFixed(2).replace('.', ',')}\n`;
     }
-
     csv += `;;;TOTAL FINAL:;${totais.total.toFixed(2).replace('.', ',')}\n\n`;
-
     const dataAtual = budgetInfo ? formatDateInput(budgetInfo.date) : new Date().toLocaleDateString('pt-PT');
     csv += `Data do orçamento:;${dataAtual}\n`;
-
     // Criar o ficheiro virtual (Blob)
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const link = document.createElement("a");
@@ -738,13 +742,11 @@ function exportarParaExcel() {
     const nomeClienteFormatado = clientInfo.name ? clientInfo.name.replace(/[^a-z0-9]/gi, '_') : 'Geral';
     link.href = url;
     link.download = `Orcamento_${nomeClienteFormatado}_${Date.now()}.csv`;
-
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
-
 // Expor funções globalmente para event handlers inline
 window.openCatalog = openCatalog;
 window.closeCatalog = closeCatalog;

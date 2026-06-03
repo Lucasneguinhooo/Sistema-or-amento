@@ -44,7 +44,15 @@ body {
     align-items: center;
     gap: 15px;
 }
-
+ .logo-image {
+    height: 120px;
+    width: auto;
+    border-radius: 8px;
+    object-fit: contain;
+    background-color: white;
+    padding: 5px;
+     box-shadow: 0 4px 15px rgba(255,255,255,0.3);  
+}
 .logo {
     position: relative;
     width: 90px;
