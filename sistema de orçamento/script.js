@@ -52,7 +52,6 @@ let budgetInfo = {
     tax: 0
 };
 
-// ===== FUNÇÕES UTILITÁRIAS =====
 function getValidUntilDate() {
     const date = new Date();
     date.setDate(date.getDate() + 30);
@@ -71,7 +70,6 @@ function formatDate(dateString) {
     return new Date(dateString + 'T00:00:00').toLocaleDateString('pt-BR');
 }
 
-// ===== GERENCIAMENTO DE CATÁLOGO =====
 function openCatalog() {
     document.getElementById('catalogModal').classList.add('active');
 }
@@ -139,6 +137,7 @@ function addFromCatalog(id) {
     };
 
     products.push(newProduct);
+    saveProductsToStorage();
     renderProducts();
     calculateTotals();
     closeCatalog();
@@ -196,6 +195,7 @@ function addCustomProduct() {
     };
     
     products.push(newProduct);
+    saveProductsToStorage();
     renderProducts();
     calculateTotals();
 }
@@ -216,6 +216,7 @@ function updateProduct(id, field, value) {
         product.image = value || product.image;
     }
     
+    saveProductsToStorage();
     renderProducts();
     calculateTotals();
 }
@@ -223,6 +224,7 @@ function updateProduct(id, field, value) {
 function removeProduct(id) {
     if (confirm('Deseja remover este item do orçamento?')) {
         products = products.filter(p => p.id !== id);
+        saveProductsToStorage();
         renderProducts();
         calculateTotals();
     }
@@ -370,6 +372,8 @@ function loadCatalogFromStorage() {
 
 // ===== GERAÇÃO DE PDF =====
 function generatePDF() {
+    exportarParaExcel(); // <-- Gera o Excel automaticamente ao clicar no PDF
+
     const totals = calculateTotals();
     const html = `
         <!DOCTYPE html>
@@ -634,6 +638,7 @@ function convertToISODate(maskedDate) {
 // ===== INICIALIZAÇÃO =====
 function init() {
     loadCatalogFromStorage();
+    loadProductsFromStorage();
     setupEventListeners();
     renderProducts();
     renderCatalog();
@@ -648,6 +653,98 @@ if (document.readyState === 'loading') {
     init();
 }
 
+// Salva os itens do orçamento no localStorage 
+function saveProductsToStorage() {
+    try {
+        localStorage.setItem('theOfficeProducts', JSON.stringify(products));
+    } catch (e) {
+        console.error('Erro ao salvar produtos:', e);
+    }
+}
+
+// Carrega os itens do orçamento do localStorage
+function loadProductsFromStorage() {
+    try {
+        const savedProducts = localStorage.getItem('theOfficeProducts');
+        if (savedProducts) {
+            products = JSON.parse(savedProducts);
+        }
+    } catch (e) {
+        console.error('Erro ao carregar produtos:', e);
+    }
+}
+
+// ===== EXPORTAR PARA EXCEL (CSV) =====
+function exportarParaExcel() {
+    if (products.length === 0) {
+        alert("O orçamento está vazio. Adicione produtos antes de exportar.");
+        return;
+    }
+
+    // O BOM (\uFEFF) é obrigatório para o Excel ler acentos em UTF-8 corretamente
+    let csv = "\uFEFF"; 
+    
+    // Título
+    csv += "ORÇAMENTO - THE OFFICE\n\n";
+
+    // Dados do Cliente
+    if (clientInfo) {
+        csv += "DADOS DO CLIENTE\n";
+        csv += `Nome:;${clientInfo.name || 'Não informado'}\n`;
+        csv += `Email:;${clientInfo.email || 'Não informado'}\n`;
+        csv += `Telefone:;${clientInfo.phone || 'Não informado'}\n`;
+        csv += `Morada:;${clientInfo.address || 'Não informada'}\n\n`;
+    }
+
+    // Cabeçalho da Tabela de Produtos
+    csv += "Item;Descrição;Quantidade;Preço Unitário;Total\n";
+
+    // Preencher Produtos
+    products.forEach((p, index) => {
+        // Limpar possíveis ponto e vírgulas da descrição para não quebrar o Excel
+        const desc = p.description ? p.description.replace(/;/g, ',') : '';
+        // Formatar para o Excel reconhecer como número (trocar ponto por vírgula)
+        const precoFormatado = p.unitPrice.toFixed(2).replace('.', ',');
+        const totalFormatado = p.total.toFixed(2).replace('.', ',');
+        
+        csv += `${index + 1};${desc};${p.quantity};${precoFormatado};${totalFormatado}\n`;
+    });
+
+    csv += "\n";
+
+    // Calcular Totais
+    const totais = calculateTotals();
+    
+    csv += `;;;SUBTOTAL:;${totais.subtotal.toFixed(2).replace('.', ',')}\n`;
+    
+    if (budgetInfo && budgetInfo.discount > 0) {
+        csv += `;;;DESCONTO (${budgetInfo.discount}%):;- ${totais.discountAmount.toFixed(2).replace('.', ',')}\n`;
+    }
+    
+    if (budgetInfo && budgetInfo.tax > 0) {
+        csv += `;;;IMPOSTO (${budgetInfo.tax}%):;${totais.taxAmount.toFixed(2).replace('.', ',')}\n`;
+    }
+
+    csv += `;;;TOTAL FINAL:;${totais.total.toFixed(2).replace('.', ',')}\n\n`;
+
+    const dataAtual = budgetInfo ? formatDateInput(budgetInfo.date) : new Date().toLocaleDateString('pt-PT');
+    csv += `Data do orçamento:;${dataAtual}\n`;
+
+    // Criar o ficheiro virtual (Blob)
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    const nomeClienteFormatado = clientInfo.name ? clientInfo.name.replace(/[^a-z0-9]/gi, '_') : 'Geral';
+    link.href = url;
+    link.download = `Orcamento_${nomeClienteFormatado}_${Date.now()}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 // Expor funções globalmente para event handlers inline
 window.openCatalog = openCatalog;
 window.closeCatalog = closeCatalog;
@@ -658,3 +755,4 @@ window.addCustomProduct = addCustomProduct;
 window.updateProduct = updateProduct;
 window.removeProduct = removeProduct;
 window.generatePDF = generatePDF;
+window.exportarParaExcel = exportarParaExcel;

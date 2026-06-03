@@ -1,4 +1,4 @@
-/* ===== RESET E VARIÁVEIS ===== */
+
 * {
     margin: 0;
     padding: 0;
@@ -586,4 +586,19 @@ svg {
 
 .fade-in {
     animation: fadeIn 0.3s ease-out;
+}
+
+/*===== BOTÃO EXPORTAR EXCEL =====*/
+.btn-excel {
+    BACKGROUND-COLOR: #2d6a4f;
+    COLOR: GREEN;
+    BORDER: 1px solid black;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
 }
