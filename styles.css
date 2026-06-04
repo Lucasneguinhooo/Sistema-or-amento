@@ -69,19 +69,19 @@ body {
     line-height: 1.2;
 }
 
-.logo-text .the {
-    font-size: 14px;
-    font-weight: 300;
+.logo-text .Ponto {
+    font-size: 12px;
+    font-weight: 400;
 }
 
-.logo-text .office {
-    font-size: 18px;
-    font-weight: 700;
+.logo-text .do-Iphone📱 {
+    font-size: 12px;
+    font-weight: 400;
     letter-spacing: -0.5px;
 }
 
 .logo-text .subtitle {
-    font-size: 8px;
+    font-size: 9px;
     opacity: 0.8;
     margin-top: 2px;
 }
